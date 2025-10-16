@@ -1,11 +1,66 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Upload, FileText, Receipt, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
 
 const DocumentScanner = () => {
   const [activeTab, setActiveTab] = useState("resume");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      toast({
+        title: "File selected",
+        description: `${file.name} (${(file.size / 1024).toFixed(2)} KB)`,
+      });
+    }
+  };
+
+  const handleBrowseClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleScan = async () => {
+    if (!selectedFile) {
+      toast({
+        variant: "destructive",
+        title: "No file selected",
+        description: "Please select a file to scan",
+      });
+      return;
+    }
+
+    setUploading(true);
+    try {
+      // Simulate upload - replace with actual upload logic
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      toast({
+        title: "Success",
+        description: `${selectedFile.name} scanned successfully!`,
+      });
+      
+      setSelectedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to scan document",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const documentTypes = [
     { value: "resume", label: "Resume", icon: FileText },
@@ -40,7 +95,16 @@ const DocumentScanner = () => {
                   Analyze {type.label.toLowerCase()}s and extract professional information
                 </p>
                 
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                
                 <div 
+                  onClick={handleBrowseClick}
                   className="group relative rounded-lg border-2 border-dashed border-primary/30 p-12 text-center transition-all duration-300 hover:border-primary/60 hover:shadow-[0_0_20px_hsla(258,85%,57%,0.15)] cursor-pointer"
                   style={{ background: 'var(--gradient-upload)' }}
                 >
@@ -49,20 +113,20 @@ const DocumentScanner = () => {
                   </div>
                   <h3 className="mt-6 text-xl font-bold text-foreground">Upload {type.label}</h3>
                   <p className="mt-3 text-sm font-medium text-primary/80">
-                    Drag & drop your {type.label.toLowerCase()} here, or click to browse
+                    {selectedFile ? selectedFile.name : `Drag & drop your ${type.label.toLowerCase()} here, or click to browse`}
                   </p>
                   <p className="mt-2 text-xs text-muted-foreground">
                     Supported formats: PDF, DOC, DOCX, TXT, JPG, PNG
                   </p>
-                  <Button className="mt-8 shadow-md hover:shadow-lg transition-shadow" size="lg">
+                  <Button type="button" onClick={handleBrowseClick} className="mt-8 shadow-md hover:shadow-lg transition-shadow" size="lg">
                     <Upload className="mr-2 h-5 w-5" />
                     Browse Files
                   </Button>
                 </div>
                 
-                <Button className="w-full" size="lg">
+                <Button onClick={handleScan} disabled={!selectedFile || uploading} className="w-full" size="lg">
                   <FileText className="mr-2 h-4 w-4" />
-                  Scan {type.label}
+                  {uploading ? "Scanning..." : `Scan ${type.label}`}
                 </Button>
               </div>
             </TabsContent>

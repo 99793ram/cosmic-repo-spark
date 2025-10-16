@@ -17,6 +17,7 @@ const History = () => {
   const documents = [
     {
       name: "My Resume.pdf",
+      type: "Resume",
       date: "Oct 16, 2025, 9:54:35 AM",
       status: "Failed",
     },
@@ -56,6 +57,7 @@ const History = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Document Name</TableHead>
+                    <TableHead>Document Type</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead className="text-right">Status</TableHead>
                   </TableRow>
@@ -64,6 +66,7 @@ const History = () => {
                   {documents.map((doc, index) => (
                     <TableRow key={index}>
                       <TableCell className="font-medium">{doc.name}</TableCell>
+                      <TableCell className="text-muted-foreground">{doc.type}</TableCell>
                       <TableCell className="text-muted-foreground">{doc.date}</TableCell>
                       <TableCell className="text-right">
                         <Badge variant="destructive">{doc.status}</Badge>
